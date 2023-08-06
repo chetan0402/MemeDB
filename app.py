@@ -1,6 +1,6 @@
 import sqlite3
 
-from flask import Flask, request
+from flask import Flask, request, render_template
 import urllib.parse
 
 app = Flask(__name__)
@@ -9,19 +9,24 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return "in dev"
+    return render_template("index.html")
 
 
 @app.route("/api/add")
 def addingIntoDB():
+    link = request.args.get("link")
+    if link == "":
+        return ""
+    link = urllib.parse.unquote(link)
+    tags = request.args.get("tags")
+    if tags == "":
+        return ""
+
+    tag_list = tags.split(",")
+
     con = sqlite3.connect("data.db")
     cur = con.cursor()
 
-    link = request.args.get("link")
-    link = urllib.parse.unquote(link)
-    tags = request.args.get("tags")
-
-    tag_list = tags.split(",")
     for tag in tag_list:
         cur.execute(
             f"""INSERT INTO "main"."main"("Link","Tags") VALUES ('{link}','{tag}');"""
@@ -38,6 +43,8 @@ def removeLink():
     cur = con.cursor()
     link = request.args.get("link")
     cur.execute(f"""DELETE FROM main WHERE Link='{link}'""")
+    con.commit()
+    con.close()
     return ""
 
 
@@ -64,13 +71,23 @@ def getByTags():
     con = sqlite3.connect("data.db")
     cur = con.cursor()
 
-    tag = request.args.get("tag")
-
-    cur.execute(f"""SELECT * from main WHERE tags='{tag}'""")
-
-    results = cur.fetchall()
+    tags = request.args.get("tags").split(",")
+    main_dic = {}
     list_to_return = []
-    for result in results:
-        list_to_return.append(result[0])
+    for tag in tags:
+        cur.execute(f"""SELECT * from main WHERE Tags='{tag}'""")
+
+        results = cur.fetchall()
+
+        for result in results:
+            try:
+                main_dic[result[0]] += 1
+            except:
+                main_dic[result[0]] = 1
+
+    for key in main_dic.keys():
+        if main_dic[key] == len(tags):
+            list_to_return.append(key)
+
     con.close()
     return str(list_to_return)

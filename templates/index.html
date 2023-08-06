@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <div>
+        <input type="text" name="" id="link-add">
+        <input type="text" name="" id="tags-add">
+        <button onclick="addIntoDB()">Add</button>
+    </div>
+    <script>
+        function addIntoDB() {
+            const oReq = new XMLHttpRequest();
+            oReq.open("GET", "/api/add?link=" + encodeURIComponent(document.getElementById("link-add").value) + "&tags=" + document.getElementById("tags-add").value);
+            oReq.send();
+        }
+    </script>
+</body>
+
+</html>
