@@ -3,19 +3,82 @@
 
 <head>
     <meta charset="UTF-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
 </head>
 
 <body>
     <div>
-        <input type="text" name="" id="link-add">
-        <input type="text" name="" id="tags-add">
+        Link:- <input type="text" name="" id="link-add">
+        tags:- <input type="text" name="" id="tags-add">
         <button onclick="addIntoDB()">Add</button>
+    </div><br>
+    <div>
+        Link:- <input type="text" id="link-get">
+        <button onclick="getByLink()">Get</button><br>
+        <p id="link-get-tags"></p>
+    </div><br>
+    <div>
+        Tags:- <input type="text" name="" id="tags-get">
+        <button onclick="getByTags()">Get</button><br>
+        Matching links:- <p id="tags-get-link"></p>
+    </div>
+    <div>
+        Link:- <input type="text" name="" id="link-remove">
+        <button onclick="removeLink()">Remove</button>
     </div>
     <script>
         function addIntoDB() {
-            const oReq = new XMLHttpRequest();
-            oReq.open("GET", "/api/add?link=" + encodeURIComponent(document.getElementById("link-add").value) + "&tags=" + document.getElementById("tags-add").value);
-            oReq.send();
+            fetch("/api/add?link=" + getUrlSafe("link-add") + "&tags=" + getUrlSafe("tags-add")).then(
+                () => {
+                    document.getElementById("link-add").value = ""
+                    document.getElementById("tags-get").value = ""
+                }
+            )
+        }
+
+        function getByLink() {
+            fetch("/api/get/link?link=" + getUrlSafe("link-get")).then(
+                function (response) {
+                    if (response.ok) {
+                        return response.text()
+                    } else {
+                        Promise.reject(response)
+                    }
+                }
+            ).then(
+                function (data) {
+                    document.getElementById("link-get-tags").textContent = data
+                }
+            )
+        }
+
+        function getByTags() {
+            fetch("/api/get/tags?tags=" + getUrlSafe("tags-get")).then(
+                function (response) {
+                    if (response.ok) {
+                        return response.text()
+                    } else {
+                        Promise.reject(response)
+                    }
+                }
+            ).then(
+                function (data) {
+                    document.getElementById("tags-get-link").textContent = data
+                }
+            )
+        }
+
+        function removeLink() {
+            fetch("/api/remove?link=" + getUrlSafe("link-remove")).then(
+                () => {
+                    document.getElementById("link-remove").value = ""
+                }
+            )
+        }
+
+
+        function getUrlSafe(elementID) {
+            return encodeURIComponent(document.getElementById(elementID).value)
         }
     </script>
 </body>
